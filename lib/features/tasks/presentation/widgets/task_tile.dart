@@ -25,14 +25,16 @@ class TaskTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final viewModelState = ref.watch(taskTileViewModelProvider(task.id));
     
-    // タスクをViewModelに設定
+    // タスクをViewModelに設定（mountedチェック付き）
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(taskTileViewModelProvider(task.id).notifier).setTask(task);
+      if (context.mounted) {
+        ref.read(taskTileViewModelProvider(task.id).notifier).setTask(task);
+      }
     });
 
     // エラーが発生した場合のSnackBar表示
     ref.listen(taskTileViewModelProvider(task.id), (previous, next) {
-      if (next.errorMessage != null) {
+      if (next.errorMessage != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
@@ -40,6 +42,7 @@ class TaskTile extends ConsumerWidget {
             action: SnackBarAction(
               label: '閉じる',
               onPressed: () {
+                if (!context.mounted) return;
                 ref.read(taskTileViewModelProvider(task.id).notifier).clearError();
               },
             ),
