@@ -94,9 +94,6 @@ class AuthRepositoryImpl implements AuthRepository {
     return User(
       uid: firebaseUser.uid,
       email: firebaseUser.email ?? '',
-      displayName: firebaseUser.displayName,
-      createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
-      updatedAt: firebaseUser.metadata.lastSignInTime ?? DateTime.now(),
     );
   }
 

@@ -23,9 +23,6 @@ class LocalAuthStorage {
     final userJson = jsonEncode({
       'uid': user.uid,
       'email': user.email,
-      'displayName': user.displayName,
-      'createdAt': user.createdAt.toIso8601String(),
-      'updatedAt': user.updatedAt.toIso8601String(),
     });
     
     await prefs.setString(_userKey, userJson);
@@ -48,9 +45,6 @@ class LocalAuthStorage {
       return User(
         uid: userMap['uid'] as String,
         email: userMap['email'] as String,
-        displayName: userMap['displayName'] as String?,
-        createdAt: DateTime.parse(userMap['createdAt'] as String),
-        updatedAt: DateTime.parse(userMap['updatedAt'] as String),
       );
     } catch (e) {
       // JSONの解析に失敗した場合はnullを返す
