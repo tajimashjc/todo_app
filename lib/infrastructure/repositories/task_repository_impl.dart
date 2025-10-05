@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:todo_app/domain/entities/task.dart';
 import 'package:todo_app/domain/repositories/task_repository.dart';
 
@@ -8,8 +9,8 @@ import 'package:todo_app/domain/repositories/task_repository.dart';
 class TaskRepositoryImpl implements TaskRepository {
 
   // ------------------------------------------------------------
-  // TODO: 環境変数にする
-  static const String _baseUrl = 'http://localhost:8888/todo_app/api';
+  // APIベースURL
+  String get _baseUrl => dotenv.env['API_BASE_URL'] ?? '';
 
   // ------------------------------------------------------------
   // APIエンドポイント

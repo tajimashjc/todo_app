@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/domain/repositories/task_repository.dart';
 import 'package:todo_app/infrastructure/mock/mock_task_repository.dart';
@@ -8,6 +9,10 @@ import 'router/app_router.dart';
 void main() async {
   // ---------------------------------------------
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ---------------------------------------------
+  // envファイルを読み込む
+  await dotenv.load(fileName: '.env');
 
   // ---------------------------------------------
   const app = MyApp();
