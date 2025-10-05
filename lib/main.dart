@@ -2,10 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:todo_app/domain/repositories/task_repository.dart';
+import 'package:todo_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:todo_app/features/auth/infrastructure/repositories/firebase/auth_repository_impl.dart';
+import 'package:todo_app/features/tasks/domain/repositories/task_repository.dart';
 import 'package:todo_app/firebase_options.dart';
-import 'package:todo_app/infrastructure/repositories/task_repository_impl.dart';
-import 'package:todo_app/infrastructure/repositories/sort_preference_repository_impl.dart';
+import 'package:todo_app/features/tasks/infrastructure/repositories/remote/task_repository_impl.dart';
+import 'package:todo_app/features/tasks/infrastructure/repositories/sort_preference_repository_impl.dart';
 import 'router/app_router.dart';
 
 void main() async {
@@ -28,6 +30,11 @@ void main() async {
   // ---------------------------------------------
   // riverpodのスコープ用のオーバーライドリストを作成
   final overrides = [
+    // 認証プロバイダ
+    authRepositoryProvider.overrideWithValue(
+      AuthRepositoryImpl()
+    ),
+    // タスクプロバイダ
     taskRepositoryProvider.overrideWithValue(
       TaskRepositoryImpl()
       // MockTaskRepository()
