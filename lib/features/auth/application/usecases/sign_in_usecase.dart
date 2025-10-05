@@ -65,7 +65,7 @@ class SignInUsecase {
       );
 
       // 認証状態を更新
-      _ref.read(authStateNotifierProvider.notifier).setAuthState(user);
+      _ref.read(authStateNotifierProvider.notifier).setAuthenticated(user);
 
       return SignInResult(user: user);
     } catch (e) {

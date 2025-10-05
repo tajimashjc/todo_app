@@ -17,8 +17,8 @@ class AuthGuard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 認証状態を監視
     ref.listen(authStateNotifierProvider, (previous, next) {
-      if (next == null && previous != null) {
-        // 認証状態がnullになった場合（ログアウトなど）
+      if (next.isUnauthenticated && previous?.isAuthenticated == true) {
+        // 認証状態が未認証になった場合（ログアウトなど）
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
             context.go('/sign-in');
@@ -29,8 +29,24 @@ class AuthGuard extends ConsumerWidget {
 
     final authState = ref.watch(authStateNotifierProvider);
 
-    // 認証状態がnullの場合はログイン画面にリダイレクト
-    if (authState == null) {
+    // 初期化中の場合はローディング表示
+    if (authState.isInitializing) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('認証状態を確認中...'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 未認証の場合はログイン画面にリダイレクト
+    if (authState.isUnauthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.go('/sign-in');

@@ -40,7 +40,7 @@ class AuthViewModel extends Notifier<AuthViewModelState> {
   AuthViewModelState build() {
     // 認証状態を監視
     ref.listen(authStateNotifierProvider, (previous, next) {
-      state = state.copyWith(currentUser: next);
+      state = state.copyWith(currentUser: next.user);
     });
 
     return const AuthViewModelState();

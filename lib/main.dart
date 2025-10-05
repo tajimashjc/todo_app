@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:todo_app/features/auth/infrastructure/repositories/firebase/auth_repository_impl.dart';
+import 'package:todo_app/features/auth/application/usecases/auto_sign_in_usecase.dart';
 import 'package:todo_app/features/tasks/domain/repositories/task_repository.dart';
 import 'package:todo_app/firebase_options.dart';
 import 'package:todo_app/features/tasks/infrastructure/repositories/remote/task_repository_impl.dart';
@@ -54,11 +55,17 @@ void main() async {
   runApp(scope);
 }
 
-class MyApp extends StatelessWidget {
+
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // アプリ起動時に自動再ログインを実行
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _performAutoSignIn(ref);
+    });
+
     return MaterialApp.router(
       title: 'ToDo App',
       themeMode: ThemeMode.system,
@@ -67,5 +74,28 @@ class MyApp extends StatelessWidget {
       ),
       routerConfig: appRouter,
     );
+  }
+
+  /// ------------------------------------------------------------------
+  /// 自動再ログインを実行する
+  /// 
+  /// ### [Parameters]
+  /// - [ref] WidgetRef
+  /// 
+  /// ### [Returns]
+  /// - void
+  void _performAutoSignIn(WidgetRef ref) async {
+    try {
+      final autoSignInUsecase = ref.read(autoSignInUsecaseProvider);
+      final result = await autoSignInUsecase.execute();
+      
+      if (result.isSuccess && result.user != null) {
+        print('自動再ログインが成功しました: ${result.user!.email}');
+      } else {
+        print('自動再ログインが失敗しました: ${result.errorMessage}');
+      }
+    } catch (e) {
+      print('自動再ログイン中にエラーが発生しました: $e');
+    }
   }
 }

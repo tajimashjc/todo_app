@@ -1,12 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:todo_app/features/auth/domain/entities/user.dart';
 import 'package:todo_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:todo_app/features/auth/infrastructure/datasources/local_auth_storage.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final firebase_auth.FirebaseAuth _firebaseAuth;
+  final LocalAuthStorage _localStorage;
 
-  AuthRepositoryImpl({firebase_auth.FirebaseAuth? firebaseAuth})
-      : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance;
+  AuthRepositoryImpl({
+    firebase_auth.FirebaseAuth? firebaseAuth,
+    LocalAuthStorage? localStorage,
+  }) : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
+       _localStorage = localStorage ?? LocalAuthStorage();
 
   @override
   Future<User?> getCurrentUser() async {
@@ -31,7 +36,12 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('ユーザー作成に失敗しました');
       }
 
-      return _convertFirebaseUserToUser(credential.user!);
+      final user = _convertFirebaseUserToUser(credential.user!);
+      
+      // ローカルストレージにユーザー情報を保存
+      await _localStorage.saveUser(user);
+      
+      return user;
     } on firebase_auth.FirebaseAuthException catch (e) {
       throw _handleFirebaseAuthException(e);
     }
@@ -52,7 +62,12 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('ログインに失敗しました');
       }
 
-      return _convertFirebaseUserToUser(credential.user!);
+      final user = _convertFirebaseUserToUser(credential.user!);
+      
+      // ローカルストレージにユーザー情報を保存
+      await _localStorage.saveUser(user);
+      
+      return user;
     } on firebase_auth.FirebaseAuthException catch (e) {
       print(e);
       throw _handleFirebaseAuthException(e);
@@ -62,6 +77,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+    // ローカルストレージから認証情報をクリア
+    await _localStorage.clearAuth();
   }
 
   @override
