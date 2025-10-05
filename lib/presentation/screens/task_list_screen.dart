@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_app/domain/entities/task.dart';
 import 'package:todo_app/application/state/task_list_state.dart';
+import 'package:todo_app/application/types/task_sort_type.dart';
 import 'package:todo_app/presentation/viewmodels/task_list_viewmodel.dart';
 import 'package:todo_app/presentation/widgets/task_tile.dart';
 import 'package:todo_app/presentation/widgets/task_input_dialog.dart';
@@ -14,6 +15,11 @@ class TaskListScreen extends ConsumerStatefulWidget {
 }
 
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
+
+  // ------------------------------------------------------------------
+  // プロパティ
+  TaskSortType _currentSortType = TaskSortType.none;  // 現在のソート種類
+
 
   // ------------------------------------------------------------------
   // ライフサイクル
@@ -56,6 +62,35 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       appBar: AppBar(
         title: const Text('タスク一覧'),
         actions: [
+          // ソートメニュー
+          PopupMenuButton<TaskSortType>(
+            icon: const Icon(Icons.sort),
+            tooltip: 'ソート',
+            onSelected: (TaskSortType sortType) {
+              setState(() {
+                _currentSortType = sortType;
+              });
+            },
+            itemBuilder: (BuildContext context) => TaskSortType.values.map((TaskSortType sortType) {
+              return PopupMenuItem<TaskSortType>(
+                value: sortType,
+                child: Row(
+                  children: [
+                    Icon(
+                      sortType.icon,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(sortType.displayName),
+                    if (_currentSortType == sortType) ...[
+                      const Spacer(),
+                      const Icon(Icons.check, size: 16),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
           // タスク一覧の更新ボタン
           IconButton(
             onPressed: () {
@@ -122,8 +157,11 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   /// ### [Returns]
   /// - Widget
   Widget _buildTaskList(List<Task> tasks) {
+    // ソートを適用
+    List<Task> sortedTasks = _currentSortType.sortTasks(tasks);
+
     // タスクがない場合    
-    if (tasks.isEmpty) {
+    if (sortedTasks.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -154,9 +192,9 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     }
 
     return ListView.builder(
-      itemCount: tasks.length,
+      itemCount: sortedTasks.length,
       itemBuilder: (context, index) {
-        final task = tasks[index];
+        final task = sortedTasks[index];
         return TaskTile(
           key: ValueKey(task.id),
           task: task,
