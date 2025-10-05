@@ -6,6 +6,7 @@ import 'package:todo_app/features/tasks/application/types/task_sort_type.dart';
 import 'package:todo_app/features/tasks/presentation/viewmodels/task_list_viewmodel.dart';
 import 'package:todo_app/features/tasks/presentation/widgets/task_tile.dart';
 import 'package:todo_app/features/tasks/presentation/widgets/task_input_dialog.dart';
+import 'package:todo_app/features/auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class TaskListScreen extends ConsumerStatefulWidget {
   const TaskListScreen({super.key});
@@ -95,6 +96,12 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
             icon: const Icon(Icons.refresh),
             tooltip: 'タスク一覧の更新',
           ),
+          // ログアウトボタン
+          IconButton(
+            onPressed: () => _handleLogout(context),
+            icon: const Icon(Icons.logout),
+            tooltip: 'ログアウト',
+          ),
         ],
       ),
       body: viewModelState.isLoading
@@ -113,6 +120,55 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
+
+  // ------------------------------------------------------------------
+  // イベントハンドラー
+
+  /// ------------------------------------------------------------------
+  /// ログアウト処理を実行する
+  /// 
+  /// ### [Parameters]
+  /// - [context] BuildContext
+  /// 
+  /// ### [Returns]
+  /// - Future<void>
+  Future<void> _handleLogout(BuildContext context) async {
+    // 確認ダイアログを表示
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ログアウト'),
+        content: const Text('ログアウトしますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('ログアウト'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      // AuthViewModelを使用してログアウトを実行
+      // TODO: 別機能のViewModelを呼び出すことが設計上問題ないか再度検討する。
+      final authViewModel = ref.read(authViewModelProvider.notifier);
+      final success = await authViewModel.signOut();
+      
+      if (!success && mounted) {
+        // ログアウトに失敗した場合のエラー表示
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('ログアウトに失敗しました'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   // ------------------------------------------------------------------
   // ウィジェット構築
