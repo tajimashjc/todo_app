@@ -46,3 +46,8 @@ app.*.map.json
 
 # envファイル
 .env
+
+# Firebase関連
+# firebase_options.dartは、基本的には公開しても問題ないらしいが、念の為ignoreしておく
+/android/app/google-services.json
+/lib/firebase_options.dart
