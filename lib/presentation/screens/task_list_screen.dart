@@ -16,18 +16,15 @@ class TaskListScreen extends ConsumerStatefulWidget {
 
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
-  // ------------------------------------------------------------------
-  // プロパティ
-  TaskSortType _currentSortType = TaskSortType.none;  // 現在のソート種類
-
 
   // ------------------------------------------------------------------
   // ライフサイクル
   @override
   void initState() {
     super.initState();
-    // 次のフレームでタスク一覧を読み込み
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // 次のフレームでタスク一覧を読み込みとソート設定を初期化
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(taskListViewModelProvider.notifier).initialize();
       ref.read(taskListViewModelProvider.notifier).loadTasks();
     });
   }
@@ -39,6 +36,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   Widget build(BuildContext context) {
     final viewModelState = ref.watch(taskListViewModelProvider);
     final tasks = ref.watch(taskListNotifierProvider);
+    final currentSortType = viewModelState.currentSortType;
 
     // エラーが発生した場合のSnackBar表示
     ref.listen(taskListViewModelProvider, (previous, next) {
@@ -67,9 +65,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
             icon: const Icon(Icons.sort),
             tooltip: 'ソート',
             onSelected: (TaskSortType sortType) {
-              setState(() {
-                _currentSortType = sortType;
-              });
+              ref.read(taskListViewModelProvider.notifier).changeSortType(sortType);
             },
             itemBuilder: (BuildContext context) => TaskSortType.values.map((TaskSortType sortType) {
               return PopupMenuItem<TaskSortType>(
@@ -82,7 +78,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(sortType.displayName),
-                    if (_currentSortType == sortType) ...[
+                    if (currentSortType == sortType) ...[
                       const Spacer(),
                       const Icon(Icons.check, size: 16),
                     ],
@@ -103,7 +99,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       ),
       body: viewModelState.isLoading
         ? _buildLoadingIndicator() // ローディングインジケーター
-        : _buildTaskList(tasks), // タスク一覧
+        : _buildTaskList(tasks, currentSortType), // タスク一覧
       // 新しいタスクを作成するボタン
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -153,12 +149,13 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   /// 
   /// ### [Parameters]
   /// - [tasks] タスク一覧
+  /// - [sortType] ソート種類
   /// 
   /// ### [Returns]
   /// - Widget
-  Widget _buildTaskList(List<Task> tasks) {
+  Widget _buildTaskList(List<Task> tasks, TaskSortType sortType) {
     // ソートを適用
-    List<Task> sortedTasks = _currentSortType.sortTasks(tasks);
+    List<Task> sortedTasks = sortType.sortTasks(tasks);
 
     // タスクがない場合    
     if (sortedTasks.isEmpty) {
