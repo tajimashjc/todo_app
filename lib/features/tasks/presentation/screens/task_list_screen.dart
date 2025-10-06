@@ -16,9 +16,13 @@ class TaskListScreen extends ConsumerStatefulWidget {
 }
 
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
+
+  // ------------------------------------------------------------------
   // 定数
+  static const double _appBarTitleSize = 16.0;
   static const double _iconSize = 20.0;
   static const double _checkIconSize = 16.0;
+  static const double _headerTitleSize = 20.0;
   static const double _emptyStateIconSize = 64.0;
   static const double _horizontalPadding = 20.0;
   static const double _verticalSpacing = 16.0;
@@ -139,6 +143,13 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   /// AppBarの構築
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      title: Text(
+        ref.read(authViewModelProvider).currentUser?.email ?? '',
+        style: const TextStyle(
+          fontSize: _appBarTitleSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       actions: [
         IconButton(
           onPressed: () => _handleLogout(context),
@@ -174,7 +185,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         const Text(
           'タスク一覧',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: _headerTitleSize,
             fontWeight: FontWeight.bold,
           ),
         ),
