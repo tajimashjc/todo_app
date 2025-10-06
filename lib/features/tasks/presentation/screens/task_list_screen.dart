@@ -16,14 +16,25 @@ class TaskListScreen extends ConsumerStatefulWidget {
 }
 
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
-
+  // 定数
+  static const double _iconSize = 20.0;
+  static const double _checkIconSize = 16.0;
+  static const double _emptyStateIconSize = 64.0;
+  static const double _horizontalPadding = 20.0;
+  static const double _verticalSpacing = 16.0;
+  static const double _smallSpacing = 8.0;
+  static const double _endPadding = 10.0;
 
   // ------------------------------------------------------------------
   // ライフサイクル
   @override
   void initState() {
     super.initState();
-    // 次のフレームでタスク一覧を読み込みとソート設定を初期化
+    _initializeScreen();
+  }
+
+  /// 画面の初期化処理
+  void _initializeScreen() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(taskListViewModelProvider.notifier).initialize();
       ref.read(taskListViewModelProvider.notifier).loadTasks();
@@ -39,83 +50,36 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final tasks = ref.watch(taskListNotifierProvider);
     final currentSortType = viewModelState.currentSortType;
 
-    // エラーが発生した場合のSnackBar表示
-    ref.listen(taskListViewModelProvider, (previous, next) {
-      if (next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: '閉じる',
-              onPressed: () {
-                ref.read(taskListViewModelProvider.notifier).clearError();
-              },
-            ),
-          ),
-        );
-      }
-    });
+    _setupErrorListener();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('タスク一覧'),
-        actions: [
-          // ソートメニュー
-          PopupMenuButton<TaskSortType>(
-            icon: const Icon(Icons.sort),
-            tooltip: 'ソート',
-            onSelected: (TaskSortType sortType) {
-              ref.read(taskListViewModelProvider.notifier).changeSortType(sortType);
-            },
-            itemBuilder: (BuildContext context) => TaskSortType.values.map((TaskSortType sortType) {
-              return PopupMenuItem<TaskSortType>(
-                value: sortType,
-                child: Row(
-                  children: [
-                    Icon(
-                      sortType.icon,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(sortType.displayName),
-                    if (currentSortType == sortType) ...[
-                      const Spacer(),
-                      const Icon(Icons.check, size: 16),
-                    ],
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-          // タスク一覧の更新ボタン
-          IconButton(
-            onPressed: () {
-              ref.read(taskListViewModelProvider.notifier).loadTasks();
-            },
-            icon: const Icon(Icons.refresh),
-            tooltip: 'タスク一覧の更新',
-          ),
-          // ログアウトボタン
-          IconButton(
-            onPressed: () => _handleLogout(context),
-            icon: const Icon(Icons.logout),
-            tooltip: 'ログアウト',
-          ),
-        ],
-      ),
-      body: viewModelState.isLoading
-        ? _buildLoadingIndicator() // ローディングインジケーター
-        : _buildTaskList(tasks, currentSortType), // タスク一覧
-      // 新しいタスクを作成するボタン
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => const TaskInputDialog(),
-          );
-        },
-        child: const Icon(Icons.add),
+      appBar: _buildAppBar(),
+      body: _buildBody(viewModelState, tasks, currentSortType),
+      floatingActionButton: _buildFloatingActionButton(),
+    );
+  }
+
+  /// エラーリスナーの設定
+  void _setupErrorListener() {
+    ref.listen(taskListViewModelProvider, (previous, next) {
+      if (next.errorMessage != null) {
+        _showErrorSnackBar(next.errorMessage!);
+      }
+    });
+  }
+
+  /// エラーSnackBarの表示
+  void _showErrorSnackBar(String errorMessage) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessage),
+        backgroundColor: Colors.red,
+        action: SnackBarAction(
+          label: '閉じる',
+          onPressed: () {
+            ref.read(taskListViewModelProvider.notifier).clearError();
+          },
+        ),
       ),
     );
   }
@@ -124,7 +88,6 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   // ------------------------------------------------------------------
   // イベントハンドラー
 
-  /// ------------------------------------------------------------------
   /// ログアウト処理を実行する
   /// 
   /// ### [Parameters]
@@ -173,21 +136,118 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   // ------------------------------------------------------------------
   // ウィジェット構築
 
-  /// ### [Description]
-  /// - ローディングインジケーターを構築する。
-  /// 
-  /// ### [Parameters]
-  /// - void
-  /// 
-  /// ### [Returns]
-  /// - Widget
+  /// AppBarの構築
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      actions: [
+        IconButton(
+          onPressed: () => _handleLogout(context),
+          icon: const Icon(Icons.logout),
+          tooltip: 'ログアウト',
+        ),
+      ],
+    );
+  }
+
+  /// ボディの構築
+  Widget _buildBody(TaskListViewModelState viewModelState, List<Task> tasks, TaskSortType currentSortType) {
+    if (viewModelState.isLoading) {
+      return _buildLoadingIndicator();
+    }
+
+    return Column(
+      children: [
+        _buildHeader(currentSortType),
+        const SizedBox(height: _verticalSpacing),
+        Expanded(
+          child: _buildTaskList(tasks, currentSortType),
+        ),
+      ],
+    );
+  }
+
+  /// ヘッダー部分の構築
+  Widget _buildHeader(TaskSortType currentSortType) {
+    return Row(
+      children: [
+        const SizedBox(width: _horizontalPadding),
+        const Text(
+          'タスク一覧',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const Spacer(),
+        _buildSortMenu(currentSortType),
+        _buildRefreshButton(),
+        const SizedBox(width: _endPadding),
+      ],
+    );
+  }
+
+  /// ソートメニューの構築
+  Widget _buildSortMenu(TaskSortType currentSortType) {
+    return PopupMenuButton<TaskSortType>(
+      icon: const Icon(Icons.sort),
+      tooltip: 'ソート',
+      onSelected: (TaskSortType sortType) {
+        ref.read(taskListViewModelProvider.notifier).changeSortType(sortType);
+      },
+      itemBuilder: (BuildContext context) => TaskSortType.values.map((TaskSortType sortType) {
+        return PopupMenuItem<TaskSortType>(
+          value: sortType,
+          child: Row(
+            children: [
+              Icon(
+                sortType.icon,
+                size: _iconSize,
+              ),
+              const SizedBox(width: _smallSpacing),
+              Text(sortType.displayName),
+              if (currentSortType == sortType) ...[
+                const Spacer(),
+                const Icon(Icons.check, size: _checkIconSize),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// 更新ボタンの構築
+  Widget _buildRefreshButton() {
+    return IconButton(
+      onPressed: () {
+        ref.read(taskListViewModelProvider.notifier).loadTasks();
+      },
+      icon: const Icon(Icons.refresh),
+      tooltip: 'タスク一覧の更新',
+    );
+  }
+
+  /// FloatingActionButtonの構築
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => const TaskInputDialog(),
+        );
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  /// ローディングインジケーターの構築
   Widget _buildLoadingIndicator() {
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(),
-          SizedBox(height: 16),
+          SizedBox(height: _verticalSpacing),
           Text(
             'タスクを読み込み中...',
             style: TextStyle(
@@ -200,48 +260,12 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
-  /// ### [Description]
-  /// - タスク一覧を構築する。
-  /// 
-  /// ### [Parameters]
-  /// - [tasks] タスク一覧
-  /// - [sortType] ソート種類
-  /// 
-  /// ### [Returns]
-  /// - Widget
+  /// タスク一覧の構築
   Widget _buildTaskList(List<Task> tasks, TaskSortType sortType) {
-    // ソートを適用
-    List<Task> sortedTasks = sortType.sortTasks(tasks);
+    final sortedTasks = sortType.sortTasks(tasks);
 
-    // タスクがない場合    
     if (sortedTasks.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.task_alt,
-              size: 64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'タスクがありません',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '右下のボタンから新しいタスクを作成してください',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState();
     }
 
     return ListView.builder(
@@ -253,6 +277,37 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           task: task,
         );
       },
+    );
+  }
+
+  /// 空状態の表示
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.task_alt,
+            size: _emptyStateIconSize,
+            color: Colors.grey,
+          ),
+          SizedBox(height: _verticalSpacing),
+          Text(
+            'タスクがありません',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey,
+            ),
+          ),
+          SizedBox(height: _smallSpacing),
+          Text(
+            '右下のボタンから新しいタスクを作成してください',
+            style: TextStyle(
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
