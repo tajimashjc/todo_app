@@ -1,28 +1,23 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:todo_app/features/tasks/domain/entities/task.dart';
 import 'package:todo_app/features/tasks/domain/repositories/task_repository.dart';
+import 'package:todo_app/features/tasks/infrastructure/api/api_client.dart';
 
 /// ### [Description]
 /// - TaskRepositoryの実装クラス（API通信版）
 class TaskRepositoryImpl implements TaskRepository {
 
   // ------------------------------------------------------------
-  // APIベースURL
-  String get _baseUrl => dotenv.env['API_BASE_URL'] ?? '';
-
-  // ------------------------------------------------------------
   // APIエンドポイント
   static const String _tasksEndpoint = '/tasks';  // タスクAPI
   
-  /// HTTPクライアント
-  final http.Client _client;
+  /// APIクライアント
+  final ApiClient _apiClient;
   
 
   // ------------------------------------------------------------
   // コンストラクタ
-  TaskRepositoryImpl({http.Client? client}) : _client = client ?? http.Client();
+  TaskRepositoryImpl({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
 
   // ------------------------------------------------------------
@@ -36,10 +31,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<List<Task>> getTasks() async {
     try {
-      final response = await _client.get(
-        Uri.parse('$_baseUrl$_tasksEndpoint'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await _apiClient.get(_tasksEndpoint);
 
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = json.decode(response.body);
@@ -63,10 +55,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Task> getTask(String id) async {
     try {
-      final response = await _client.get(
-        Uri.parse('$_baseUrl$_tasksEndpoint/$id'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await _apiClient.get('$_tasksEndpoint/$id');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> json = jsonDecode(response.body);
@@ -92,9 +81,8 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Task> createTask(Task task) async {
     try {
-      final response = await _client.post(
-        Uri.parse('$_baseUrl$_tasksEndpoint'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await _apiClient.post(
+        _tasksEndpoint,
         body: json.encode(_taskToJson(task)),
       );
 
@@ -120,9 +108,8 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Task> updateTask(Task task) async {
     try {
-      final response = await _client.put(
-        Uri.parse('$_baseUrl$_tasksEndpoint/${task.id}'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await _apiClient.put(
+        '$_tasksEndpoint/${task.id}',
         body: json.encode(_taskToJson(task)),
       );
 
@@ -150,10 +137,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> deleteTask(String id) async {
     try {
-      final response = await _client.delete(
-        Uri.parse('$_baseUrl$_tasksEndpoint/$id'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await _apiClient.delete('$_tasksEndpoint/$id');
 
       if (response.statusCode == 200) {
         return;
