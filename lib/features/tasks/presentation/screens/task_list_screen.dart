@@ -142,9 +142,11 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
   /// AppBarの構築
   PreferredSizeWidget _buildAppBar() {
+    final authState = ref.watch(authViewModelProvider);
+    
     return AppBar(
       title: Text(
-        ref.read(authViewModelProvider).currentUser?.email ?? '',
+        authState.currentUser?.email ?? '',
         style: const TextStyle(
           fontSize: _appBarTitleSize,
           fontWeight: FontWeight.bold,

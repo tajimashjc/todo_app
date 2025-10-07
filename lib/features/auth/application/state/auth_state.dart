@@ -45,7 +45,8 @@ class AuthStateNotifier extends Notifier<AuthState> {
   /// 
   /// ### [Returns]
   /// - void
-  void _initializeAuthState() async {
+  void _initializeAuthState() {
+    Future.microtask(() async {
     try {
       final localStorage = LocalAuthStorage();
       final isLoggedIn = await localStorage.isLoggedIn();
@@ -67,6 +68,7 @@ class AuthStateNotifier extends Notifier<AuthState> {
       print('認証状態の初期化に失敗しました: $e');
       setUnauthenticated();
     }
+    });
   }
 
   /// ------------------------------------------------------------------
