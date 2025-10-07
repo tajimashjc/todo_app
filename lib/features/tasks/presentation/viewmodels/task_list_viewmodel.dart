@@ -21,7 +21,7 @@ class TaskListViewModelState {
   const TaskListViewModelState({
     this.isLoading = false,
     this.errorMessage,
-    this.currentSortType = TaskSortType.none,
+    this.currentSortType = TaskSortType.createdAt,
     this.isAscending = false,
   });
 

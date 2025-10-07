@@ -26,7 +26,7 @@ class SortPreferenceRepositoryImpl implements SortPreferenceRepository {
       final sortTypeString = prefs.getString(_sortPreferenceKey);
       
       if (sortTypeString == null) {
-        return TaskSortType.none;
+        return TaskSortType.createdAt;
       }
       
       // 文字列からTaskSortTypeに変換
@@ -36,10 +36,10 @@ class SortPreferenceRepositoryImpl implements SortPreferenceRepository {
         }
       }
       
-      return TaskSortType.none;
+      return TaskSortType.createdAt;
     } catch (e) {
       // エラーが発生した場合はデフォルト値を返す
-      return TaskSortType.none;
+      return TaskSortType.createdAt;
     }
   }
 

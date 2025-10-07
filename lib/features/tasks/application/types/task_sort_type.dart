@@ -4,9 +4,8 @@ import 'package:todo_app/features/tasks/domain/entities/task.dart';
 /// ------------------------------------------------------------
 /// タスクのソート種類
 enum TaskSortType {
-  none('通常順'),
-  priority('優先度順'),
   createdAt('作成日順'),
+  priority('優先度順'),
   dueDate('期限日順');
 
   const TaskSortType(this.displayName);
@@ -19,12 +18,10 @@ enum TaskSortType {
   /// - IconData
   IconData get icon {
     switch (this) {
-      case TaskSortType.none:
-        return Icons.sort;
-      case TaskSortType.priority:
-        return Icons.priority_high;
       case TaskSortType.createdAt:
         return Icons.access_time;
+      case TaskSortType.priority:
+        return Icons.priority_high;
       case TaskSortType.dueDate:
         return Icons.event;
     }
@@ -40,10 +37,6 @@ enum TaskSortType {
   /// ### [Returns]
   /// - List<Task>
   List<Task> sortTasks(List<Task> tasks, {bool isAscending = false}) {
-    if (this == TaskSortType.none) {
-      return tasks;
-    }
-
     List<Task> sortedTasks = List.from(tasks);
     
     switch (this) {
@@ -69,9 +62,6 @@ enum TaskSortType {
             ? a.dueDate!.compareTo(b.dueDate!)
             : b.dueDate!.compareTo(a.dueDate!);
         });
-        break;
-      case TaskSortType.none:
-        // 何もしない
         break;
     }
     
