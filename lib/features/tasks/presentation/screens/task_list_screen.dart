@@ -155,7 +155,13 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       actions: [
         IconButton(
           onPressed: () => _handleLogout(context),
-          icon: const Icon(Icons.logout),
+          icon:Row(
+            children: [
+              const Icon(Icons.logout),
+              const SizedBox(width: 4),
+              const Text('ログアウト'),
+            ],
+          ),
           tooltip: 'ログアウト',
         ),
       ],
