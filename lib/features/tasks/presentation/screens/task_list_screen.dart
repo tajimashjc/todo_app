@@ -22,7 +22,6 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   static const double _appBarTitleSize = 16.0;
   static const double _iconSize = 20.0;
   static const double _checkIconSize = 16.0;
-  static const double _headerTitleSize = 20.0;
   static const double _emptyStateIconSize = 64.0;
   static const double _horizontalPadding = 20.0;
   static const double _verticalSpacing = 16.0;
@@ -190,16 +189,9 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     return Row(
       children: [
         const SizedBox(width: _horizontalPadding),
-        const Text(
-          'タスク一覧',
-          style: TextStyle(
-            fontSize: _headerTitleSize,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const Spacer(),
         _buildSortMenu(currentSortType),
         _buildSortOrderButton(isAscending),
+        const Spacer(),
         _buildRefreshButton(),
         const SizedBox(width: _endPadding),
       ],
@@ -281,7 +273,14 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       onPressed: () {
         ref.read(taskListViewModelProvider.notifier).loadTasks();
       },
-      icon: const Icon(Icons.refresh),
+      icon:
+      Row(
+        children: [
+          const Icon(Icons.refresh),
+          const SizedBox(width: 4),
+          const Text('再読み込み'),
+        ],
+      ),
       tooltip: 'タスク一覧の更新',
     );
   }
