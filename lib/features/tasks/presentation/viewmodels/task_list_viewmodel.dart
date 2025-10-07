@@ -16,22 +16,26 @@ class TaskListViewModelState {
   final bool isLoading;
   final String? errorMessage;
   final TaskSortType currentSortType;
+  final bool isAscending;
 
   const TaskListViewModelState({
     this.isLoading = false,
     this.errorMessage,
     this.currentSortType = TaskSortType.none,
+    this.isAscending = false,
   });
 
   TaskListViewModelState copyWith({
     bool? isLoading,
     String? errorMessage,
     TaskSortType? currentSortType,
+    bool? isAscending,
   }) {
     return TaskListViewModelState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       currentSortType: currentSortType ?? this.currentSortType,
+      isAscending: isAscending ?? this.isAscending,
     );
   }
 }
@@ -99,6 +103,15 @@ class TaskListViewModel extends Notifier<TaskListViewModelState> {
       // エラーが発生した場合はエラーメッセージを設定
       state = state.copyWith(errorMessage: 'ソート設定の保存に失敗しました: $e');
     }
+  }
+
+  /// ------------------------------------------------------------------
+  /// ソート順序を切り替える
+  /// 
+  /// ### [Returns]
+  /// - void
+  void toggleSortOrder() {
+    state = state.copyWith(isAscending: !state.isAscending);
   }
 
   /// ------------------------------------------------------------------

@@ -168,17 +168,17 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
     return Column(
       children: [
-        _buildHeader(currentSortType),
+        _buildHeader(currentSortType, viewModelState.isAscending),
         const SizedBox(height: _verticalSpacing),
         Expanded(
-          child: _buildTaskList(tasks, currentSortType),
+          child: _buildTaskList(tasks, currentSortType, viewModelState.isAscending),
         ),
       ],
     );
   }
 
   /// ヘッダー部分の構築
-  Widget _buildHeader(TaskSortType currentSortType) {
+  Widget _buildHeader(TaskSortType currentSortType, bool isAscending) {
     return Row(
       children: [
         const SizedBox(width: _horizontalPadding),
@@ -191,6 +191,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         ),
         const Spacer(),
         _buildSortMenu(currentSortType),
+        _buildSortOrderButton(isAscending),
         _buildRefreshButton(),
         const SizedBox(width: _endPadding),
       ],
@@ -200,8 +201,23 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   /// ソートメニューの構築
   Widget _buildSortMenu(TaskSortType currentSortType) {
     return PopupMenuButton<TaskSortType>(
-      icon: const Icon(Icons.sort),
-      tooltip: 'ソート',
+      icon: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            currentSortType.icon,
+            size: _iconSize,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            currentSortType.displayName,
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.arrow_drop_down, size: 16),
+        ],
+      ),
+      tooltip: 'ソート: ${currentSortType.displayName}',
       onSelected: (TaskSortType sortType) {
         ref.read(taskListViewModelProvider.notifier).changeSortType(sortType);
       },
@@ -224,6 +240,20 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  /// ソート順序切り替えボタンの構築
+  Widget _buildSortOrderButton(bool isAscending) {
+    return IconButton(
+      onPressed: () {
+        ref.read(taskListViewModelProvider.notifier).toggleSortOrder();
+      },
+      icon: Icon(
+        isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+        size: _iconSize,
+      ),
+      tooltip: isAscending ? '昇順' : '降順',
     );
   }
 
@@ -272,8 +302,8 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   }
 
   /// タスク一覧の構築
-  Widget _buildTaskList(List<Task> tasks, TaskSortType sortType) {
-    final sortedTasks = sortType.sortTasks(tasks);
+  Widget _buildTaskList(List<Task> tasks, TaskSortType sortType, bool isAscending) {
+    final sortedTasks = sortType.sortTasks(tasks, isAscending: isAscending);
 
     if (sortedTasks.isEmpty) {
       return _buildEmptyState();
