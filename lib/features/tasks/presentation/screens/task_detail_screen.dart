@@ -129,20 +129,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       title: const Text('期限'),
                       subtitle: Text(
                         viewModelState.task?.dueDate != null
-                            ? '${viewModelState.task!.dueDate!.year}/${viewModelState.task!.dueDate!.month}/${viewModelState.task!.dueDate!.day}'
+                            ? _formatDateTime(viewModelState.task!.dueDate!)
                             : '設定なし',
                       ),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: () async {
-                        final date = await showDatePicker(
-                          context: context,
-                          initialDate: viewModelState.task?.dueDate ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                        );
-                        if (date != null) {
-                          ref.read(taskDetailViewModelProvider(widget.taskId).notifier).updateDueDate(date);
-                        }
+                        await _showDateTimePicker(context, viewModelState.task?.dueDate);
                       },
                     ),
 
@@ -210,6 +202,74 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     if (success && mounted) {
       Navigator.of(context).pop();
     }
+  }
+
+  /// 日時選択ダイアログを表示
+  Future<void> _showDateTimePicker(BuildContext context, DateTime? currentDueDate) async {
+    // 日付選択
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: currentDueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      // 時刻選択
+      final selectedTime = await _showTimePicker(context, selectedDate, currentDueDate);
+      if (selectedTime != null) {
+        // 日付と時刻を結合
+        final combinedDateTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        );
+        ref.read(taskDetailViewModelProvider(widget.taskId).notifier).updateDueDate(combinedDateTime);
+      }
+    }
+  }
+
+  /// 時刻選択ダイアログを表示（5分刻み）
+  Future<TimeOfDay?> _showTimePicker(BuildContext context, DateTime selectedDate, DateTime? currentDueDate) async {
+    final now = DateTime.now();
+    final isToday = selectedDate.year == now.year && 
+                   selectedDate.month == now.month && 
+                   selectedDate.day == now.day;
+    
+    // 今日の場合は現在時刻以降、それ以外は0時以降
+    final initialTime = isToday 
+        ? TimeOfDay.fromDateTime(now.add(const Duration(minutes: 5)))
+        : const TimeOfDay(hour: 9, minute: 0);
+
+    return await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            timePickerTheme: TimePickerThemeData(
+              hourMinuteShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
+  /// 日時をフォーマット
+  String _formatDateTime(DateTime dateTime) {
+    final year = dateTime.year;
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    
+    return '$year/$month/$day $hour:$minute';
   }
 
   /// ### [Description]

@@ -230,7 +230,7 @@ class _DueDateField extends StatelessWidget {
       title: const Text('期限'),
       subtitle: Text(
         dueDate != null
-            ? '${dueDate!.year}/${dueDate!.month}/${dueDate!.day}'
+            ? _formatDateTime(dueDate!)
             : '設定なし',
       ),
       trailing: Row(
@@ -246,19 +246,78 @@ class _DueDateField extends StatelessWidget {
         ],
       ),
       onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: dueDate ?? DateTime.now(),
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(const Duration(days: 365)),
-        );
-        if (date != null) {
-          onDateChanged(date);
-        }
+        await _showDateTimePicker(context);
       },
     );
   }
 
+  /// 日時選択ダイアログを表示
+  Future<void> _showDateTimePicker(BuildContext context) async {
+    // 日付選択
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: dueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      // 時刻選択
+      final selectedTime = await _showTimePicker(context, selectedDate);
+      if (selectedTime != null) {
+        // 日付と時刻を結合
+        final combinedDateTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          selectedTime.hour,
+          selectedTime.minute,
+        );
+        onDateChanged(combinedDateTime);
+      }
+    }
+  }
+
+  /// 時刻選択ダイアログを表示（5分刻み）
+  Future<TimeOfDay?> _showTimePicker(BuildContext context, DateTime selectedDate) async {
+    final now = DateTime.now();
+    final isToday = selectedDate.year == now.year && 
+                   selectedDate.month == now.month && 
+                   selectedDate.day == now.day;
+    
+    // 今日の場合は現在時刻以降、それ以外は0時以降
+    final initialTime = isToday 
+        ? TimeOfDay.fromDateTime(now.add(const Duration(minutes: 5)))
+        : const TimeOfDay(hour: 9, minute: 0);
+
+    return await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            timePickerTheme: TimePickerThemeData(
+              hourMinuteShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+  }
+
+  /// 日時をフォーマット
+  String _formatDateTime(DateTime dateTime) {
+    final year = dateTime.year;
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    
+    return '$year/$month/$day $hour:$minute';
+  }
 }
 
 /// 優先度選択フィールド

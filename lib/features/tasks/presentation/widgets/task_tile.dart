@@ -99,9 +99,9 @@ class TaskTile extends ConsumerWidget {
                     color: _getDueDateColor(displayTask.dueDate!),
                   ),
                   const SizedBox(width: 4),
-                  // 優先度
+                  // 期限
                   Text(
-                    _formatDate(displayTask.dueDate!),
+                    _formatDateTime(displayTask.dueDate!),
                     style: TextStyle(
                       color: _getDueDateColor(displayTask.dueDate!),
                       fontWeight: FontWeight.w500,
@@ -224,28 +224,37 @@ class TaskTile extends ConsumerWidget {
   }
 
   /// ### [Description]
-  /// - 期限のフォーマットを取得する
+  /// - 期限のフォーマットを取得する（日時表示）
   /// 
   /// ### [Parameters]
   /// - [date] 期限
   /// 
   /// ### [Returns]
   /// - String
-  String _formatDate(DateTime date) {
+  String _formatDateTime(DateTime date) {
     final now = DateTime.now();
     final difference = date.difference(now).inDays;
     
+    // 日付部分の表示
+    String dateText;
     if (difference == 0) {
-      return '今日';
+      dateText = '今日';
     } else if (difference == 1) {
-      return '明日';
+      dateText = '明日';
     } else if (difference == -1) {
-      return '昨日';
+      dateText = '昨日';
     } else if (difference > 0) {
-      return '$difference日後';
+      dateText = '$difference日後';
     } else {
-      return '$difference日前';
+      dateText = '${-difference}日前';
     }
+    
+    // 時刻部分の表示
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    final timeText = '$hour:$minute';
+    
+    return '$dateText $timeText';
   }
 }
 
