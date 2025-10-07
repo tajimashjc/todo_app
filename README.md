@@ -1,16 +1,27 @@
-# todo_app
+## 開発環境
+Dart: 3.6~
 
-A new Flutter project.
+## 対応機種
+- iOS: 15.6~
+- Android: 11~
 
-## Getting Started
+## 使用技術
+- オニオンアーキテクチャ
+    - featureごとに「presentation/application/domain/infrastructure」層を実装
+- Firebase Authenticate（ログイン、アカウント登録機能）
 
-This project is a starting point for a Flutter application.
+## 搭載機能
+#### 【必須機能】
+- タスク⼀覧が表⽰されること ✅
+- 並べ替え（ソート）ができること ✅
+- 並べ替えの条件は必要だと思うもので構いません ✅
+- タスクの登録ができること ✅
+- タスクを⽂字列で⼊⼒できること ✅
+- タスクの更新ができること ✅
+- タスクの詳細を確認できること ✅
+- 画⾯遷移ができること ✅
+- タスクはバックエンドに保存されること ✅
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#### 【任意機能】
+- 日付設定での通知ができること ❌
+- ユーザーごとのデータの管理（ログインしてそのユーザーだけのデータの読み書きができる） ✅
