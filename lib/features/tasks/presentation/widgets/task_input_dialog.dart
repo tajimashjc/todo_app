@@ -265,14 +265,14 @@ class _DueDateField extends StatelessWidget {
       // 時刻選択
       final selectedTime = await _showTimePicker(context, selectedDate);
       if (selectedTime != null) {
-        // 日付と時刻を結合
+        // 日付と時刻を結合（ローカル時間として明示的に作成）
         final combinedDateTime = DateTime(
           selectedDate.year,
           selectedDate.month,
           selectedDate.day,
           selectedTime.hour,
           selectedTime.minute,
-        );
+        ).toLocal();
         onDateChanged(combinedDateTime);
       }
     }
