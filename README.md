@@ -7,7 +7,7 @@ Dart: 3.6~
 
 ## 使用技術
 - オニオンアーキテクチャ
-    - featureごとに「presentation/application/domain/infrastructure」層を実装
+    - 大規模開発を意識して、featureごとに「presentation/application/domain/infrastructure」層を実装しました
 - Firebase Authenticate（ログイン、アカウント登録機能）
 
 ## 搭載機能
