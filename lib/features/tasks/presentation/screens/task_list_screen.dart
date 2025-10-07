@@ -249,9 +249,19 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       onPressed: () {
         ref.read(taskListViewModelProvider.notifier).toggleSortOrder();
       },
-      icon: Icon(
-        isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-        size: _iconSize,
+      icon: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+           Icon(
+            isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+            size: _iconSize,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isAscending ? '昇順' : '降順',
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
       ),
       tooltip: isAscending ? '昇順' : '降順',
     );
