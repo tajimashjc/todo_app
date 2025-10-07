@@ -24,7 +24,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   static const double _checkIconSize = 16.0;
   static const double _emptyStateIconSize = 64.0;
   static const double _horizontalPadding = 20.0;
-  static const double _verticalSpacing = 16.0;
+  static const double _verticalSpacing = 10.0;
   static const double _smallSpacing = 8.0;
   static const double _endPadding = 10.0;
 
@@ -144,21 +144,41 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final authState = ref.watch(authViewModelProvider);
     
     return AppBar(
-      title: Text(
-        authState.currentUser?.email ?? '',
-        style: const TextStyle(
-          fontSize: _appBarTitleSize,
-          fontWeight: FontWeight.bold,
-        ),
+      backgroundColor: Colors.grey.shade300,
+      title: Row(
+        children: [
+          const Icon(
+            Icons.person,
+            color: Colors.blueGrey,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            authState.currentUser?.email ?? '',
+            style: const TextStyle(
+              fontSize: _appBarTitleSize,
+              color: Colors.blueGrey,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
       actions: [
         IconButton(
           onPressed: () => _handleLogout(context),
-          icon:Row(
+          icon: Row(
             children: [
-              const Icon(Icons.logout),
+              const Icon(
+                Icons.logout,
+                color: Colors.redAccent,
+              ),
               const SizedBox(width: 4),
-              const Text('ログアウト'),
+              const Text(
+                'ログアウト',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           tooltip: 'ログアウト',
@@ -175,8 +195,8 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
     return Column(
       children: [
-        _buildHeader(currentSortType, viewModelState.isAscending),
         const SizedBox(height: _verticalSpacing),
+        _buildHeader(currentSortType, viewModelState.isAscending),
         Expanded(
           child: _buildTaskList(tasks, currentSortType, viewModelState.isAscending),
         ),
@@ -276,9 +296,17 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       icon:
       Row(
         children: [
-          const Icon(Icons.refresh),
+          const Icon(
+            Icons.refresh,
+            color: Colors.lightBlue,
+          ),
           const SizedBox(width: 4),
-          const Text('再読み込み'),
+          const Text(
+            '再読み込み',
+            style: TextStyle(
+              color: Colors.lightBlue,
+            ),
+          ),
         ],
       ),
       tooltip: 'タスク一覧の更新',
