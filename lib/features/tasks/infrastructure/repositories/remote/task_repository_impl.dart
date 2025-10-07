@@ -189,7 +189,7 @@ class TaskRepositoryImpl implements TaskRepository {
       'id': task.id,
       'title': task.title,
       'memo': task.memo,
-      'dueDate': task.dueDate?.toIso8601String(),
+      'dueDate': task.dueDate?.toLocal().toIso8601String(),
       'priority': task.priority,
       'completed': task.completed,
       'createdAt': task.createdAt.toIso8601String(),
