@@ -34,13 +34,14 @@ class TaskInputViewModelState {
     String? memo,
     DateTime? dueDate,
     int? priority,
+    bool clearDueDate = false,
   }) {
     return TaskInputViewModelState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       title: title ?? this.title,
       memo: memo ?? this.memo,
-      dueDate: dueDate ?? this.dueDate,
+      dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
       priority: priority ?? this.priority,
     );
   }
@@ -85,7 +86,13 @@ class TaskInputViewModel extends Notifier<TaskInputViewModelState> {
   /// ### [Returns]
   /// - void
   void updateDueDate(DateTime? dueDate) {
-    state = state.copyWith(dueDate: dueDate);
+    if (dueDate == null) {
+      // 期限をクリアする場合
+      state = state.copyWith(clearDueDate: true);
+    } else {
+      // 期限を設定する場合
+      state = state.copyWith(dueDate: dueDate);
+    }
   }
 
   /// ------------------------------------------------------------------
